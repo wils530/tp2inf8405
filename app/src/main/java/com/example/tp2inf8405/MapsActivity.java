@@ -20,6 +20,8 @@ import android.location.Location;
 import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
+import android.widget.ArrayAdapter;
+import android.widget.ListView;
 
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
@@ -37,6 +39,7 @@ import com.google.android.gms.tasks.Task;
 import com.google.android.libraries.places.api.Places;
 import com.google.android.libraries.places.api.net.PlacesClient;
 
+import java.util.ArrayList;
 import java.util.Set;
 
 import static android.provider.SettingsSlicesContract.KEY_LOCATION;
@@ -54,12 +57,21 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private Location lastKnownLocation;
     private PlacesClient placesClient;
     private FusedLocationProviderClient fusedLocationProviderClient;
+    String[] bluetoothArray = new String[100];
+    ArrayList<String> arrayListDemo = new ArrayList<String>();
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
         setContentView(R.layout.activity_maps);
+        //arrayTest();
+        ArrayAdapter adapter = new ArrayAdapter<String>(this,
+                R.layout.list_view, arrayListDemo);
+        getBluetoothDevices();
+        ListView listView = (ListView) findViewById(R.id.bluetooth_list);
+        listView.setAdapter(adapter);
         Places.initialize(getApplicationContext(), "AIzaSyBDoWjm9op94TYFclt-TIU6lMzjJmQDcJs");
         placesClient = Places.createClient(this);
         fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
@@ -217,9 +229,20 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             // There are paired devices. Get the name and address of each paired device.
             for (BluetoothDevice device : pairedDevices) {
                 String deviceName = device.getName();
-                String deviceHardwareAddress = device.getAddress(); // MAC address
+                String deviceHardwareAddress = device.getAddress();
+                String deviceInfos = deviceName + '\n' + deviceHardwareAddress;
+                arrayListDemo.add(deviceInfos);
             }
         }
+    }
+
+    private void arrayTest(){
+
+        arrayListDemo.add("test1 \n subtest1");
+        arrayListDemo.add("test2 \n subtest2");
+        arrayListDemo.add("test3 \n subtest3");
+
+
     }
 
 }
