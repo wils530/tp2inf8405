@@ -1,4 +1,6 @@
 <resources>
     <string name="app_name">tp2inf8405</string>
     <string name="title_activity_maps">Map</string>
+    <string name="list_members">Denaud PIERRE PAUL\nDrucker LAGUERRE\nFarid TAOURIRT\n Manyl TELMAT\n</string>
+    <string name="app_version">Ver. 0.0.1</string>
 </resources>
