@@ -1,11 +1,13 @@
 package com.example.tp2inf8405;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatDelegate;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.FragmentActivity;
 
 import android.Manifest;
+import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.content.BroadcastReceiver;
@@ -20,7 +22,9 @@ import android.location.Location;
 import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.ListView;
 
 import com.google.android.gms.location.FusedLocationProviderClient;
@@ -48,6 +52,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
     private GoogleMap mMap;
     private Context context = this;
+    Button changeTheme;
 
     private final LatLng defaultLocation = new LatLng(45.5, -73);
     private static final int DEFAULT_ZOOM = 19;
@@ -57,21 +62,24 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private Location lastKnownLocation;
     private PlacesClient placesClient;
     private FusedLocationProviderClient fusedLocationProviderClient;
-    String[] bluetoothArray = new String[100];
+    private Activity activity = this;
+
     ArrayList<String> arrayListDemo = new ArrayList<String>();
+    private ListView listView;
+    private BluetoothAdapter mBluetoothAdapter;
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        setTheme(android.R.style.Theme_Light);
         super.onCreate(savedInstanceState);
-
+        Utils.onActivityCreateSetTheme(this);
         setContentView(R.layout.activity_maps);
+        changeTheme = (Button) findViewById(R.id.changeTheme);
         //arrayTest();
-        ArrayAdapter adapter = new ArrayAdapter<String>(this,
-                R.layout.list_view, arrayListDemo);
-        getBluetoothDevices();
-        ListView listView = (ListView) findViewById(R.id.bluetooth_list);
-        listView.setAdapter(adapter);
+
+        IntentFilter filter = new IntentFilter(BluetoothDevice.ACTION_FOUND);
+        registerReceiver(mReceiver, filter);
         Places.initialize(getApplicationContext(), "AIzaSyBDoWjm9op94TYFclt-TIU6lMzjJmQDcJs");
         placesClient = Places.createClient(this);
         fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
@@ -79,7 +87,56 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
+        ArrayAdapter adapter = new ArrayAdapter<String>(this,
+                R.layout.list_view, arrayListDemo);
+
+        listView = (ListView) findViewById(R.id.bluetooth_list);
+        listView.setAdapter(adapter);
+        mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+        mBluetoothAdapter.startDiscovery();
+
+        changeTheme.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if(AppCompatDelegate.getDefaultNightMode()== AppCompatDelegate.MODE_NIGHT_YES) {
+                    AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
+                    Utils.changeToTheme(activity, Utils.THEME_LIGHT);
+
+
+                }else{
+                    AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES);
+                    Utils.changeToTheme(activity, Utils.THEME_BLACK);
+
+                }
+
+            }
+
+        });
+
     }
+    @Override
+    protected void onDestroy() {
+        unregisterReceiver(mReceiver);
+        super.onDestroy();
+    }
+
+    private final BroadcastReceiver mReceiver = new BroadcastReceiver() {
+        public void onReceive(Context context, Intent intent) {
+            String action = intent.getAction();
+            if (BluetoothDevice.ACTION_FOUND.equals(action)) {
+                BluetoothDevice device = intent
+                        .getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
+                if (!arrayListDemo.contains(device.getName() + "\n" + device.getAddress())) {
+                    if (device.getName() != null) {
+                        arrayListDemo.add(device.getName() + "\n" + device.getAddress());
+                    }
+                    Log.i("BT", device.getName() + "\n" + device.getAddress());
+                    listView.setAdapter(new ArrayAdapter<String>(context,
+                            R.layout.list_view, arrayListDemo));
+                }
+            }
+        }
+    };
 
     @Override
     public void onMapReady(GoogleMap googleMap) {
@@ -143,11 +200,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         }
     }
     private void getLocationPermission() {
-        /*
-         * Request location permission, so that we can get the location of the
-         * device. The result of the permission request is handled by a callback,
-         * onRequestPermissionsResult.
-         */
+
         if (ContextCompat.checkSelfPermission(this.getApplicationContext(),
                 android.Manifest.permission.ACCESS_FINE_LOCATION)
                 == PackageManager.PERMISSION_GRANTED) {
@@ -218,31 +271,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         return BitmapDescriptorFactory.fromBitmap(bitmap);
     }
 
-    private void getBluetoothDevices () {
-        BluetoothAdapter bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
-        if (!bluetoothAdapter.isEnabled()) {
-            Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
-            startActivityForResult(enableBtIntent, 1);
-        }
-        Set<BluetoothDevice> pairedDevices = bluetoothAdapter.getBondedDevices();
-        if (pairedDevices.size() > 0) {
-            // There are paired devices. Get the name and address of each paired device.
-            for (BluetoothDevice device : pairedDevices) {
-                String deviceName = device.getName();
-                String deviceHardwareAddress = device.getAddress();
-                String deviceInfos = deviceName + '\n' + deviceHardwareAddress;
-                arrayListDemo.add(deviceInfos);
-            }
-        }
-    }
 
-    private void arrayTest(){
-
-        arrayListDemo.add("test1 \n subtest1");
-        arrayListDemo.add("test2 \n subtest2");
-        arrayListDemo.add("test3 \n subtest3");
-
-
-    }
 
 }
