@@ -129,6 +129,12 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 if (!arrayListDemo.contains(device.getName() + "\n" + device.getAddress())) {
                     if (device.getName() != null) {
                         arrayListDemo.add(device.getName() + "\n" + device.getAddress());
+
+                        LatLng deviceLocation = new LatLng(lastKnownLocation.getLatitude(), lastKnownLocation.getLongitude());
+                        mMap.addMarker(new MarkerOptions()
+                                .position(deviceLocation)
+                                .title(device.getName()).icon(bitmapDescriptorFromVector(context, R.drawable.mbl))).showInfoWindow();
+
                     }
                     Log.i("BT", device.getName() + "\n" + device.getAddress());
                     listView.setAdapter(new ArrayAdapter<String>(context,
