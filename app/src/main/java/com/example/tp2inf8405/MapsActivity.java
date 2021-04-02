@@ -94,7 +94,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         listView.setAdapter(adapter);
         mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
         mBluetoothAdapter.startDiscovery();
-
+        arrayListDemo = PrefConfig.readListFromPref(this);
         changeTheme.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -120,9 +120,11 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         super.onDestroy();
     }
 
+
     private final BroadcastReceiver mReceiver = new BroadcastReceiver() {
         public void onReceive(Context context, Intent intent) {
             String action = intent.getAction();
+
             if (BluetoothDevice.ACTION_FOUND.equals(action)) {
                 BluetoothDevice device = intent
                         .getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
@@ -139,6 +141,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     Log.i("BT", device.getName() + "\n" + device.getAddress());
                     listView.setAdapter(new ArrayAdapter<String>(context,
                             R.layout.list_view, arrayListDemo));
+                    PrefConfig.writeListInPref(getApplicationContext(),arrayListDemo);
                 }
             }
         }
