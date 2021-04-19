@@ -1,6 +1,8 @@
 package com.example.tp2inf8405;
 
+import android.content.ContentValues;
 import android.content.Intent;
+import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -30,11 +32,14 @@ public class Register extends AppCompatActivity {
         username = (EditText) findViewById(R.id.usernameSignup);
         password = (EditText) findViewById(R.id.passwordSignup);
         signup = (Button) findViewById(R.id.createAccount);
+        SQLiteDatabase mydatabase = openOrCreateDatabase("tp3Inf8405",MODE_PRIVATE,null);
+        mydatabase.execSQL("CREATE TABLE IF NOT EXISTS USERS(Username VARCHAR,Password VARCHAR);");
 
         signup.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 mAuth = FirebaseAuth.getInstance();
+                String savedUsername = username.getText().toString();
                 String user = username.getText().toString() + "@polymtl.ca";
                 String pass = password.getText().toString();
                 mAuth.createUserWithEmailAndPassword(user, pass)
@@ -44,6 +49,16 @@ public class Register extends AppCompatActivity {
                                 if (task.isSuccessful()) {
                                     // Sign in success, update UI with the signed-in user's information
                                     Log.d("CREATION", "createUserWithEmail:success");
+                                    String usern = "'" + savedUsername + "'";
+                                    String passw = "'" + pass + "'";
+                                    ContentValues initialValues = new ContentValues();
+
+                                    initialValues.put("Username", savedUsername);
+                                    initialValues.put("Password", pass);
+
+
+                                    //mydatabase.execSQL("INSERT INTO USERS (Username, Password) VALUES(usern , passw);");
+                                    mydatabase.insert("USERS", null, initialValues);
                                     FirebaseUser user = mAuth.getCurrentUser();
                                     goToMap();
 
