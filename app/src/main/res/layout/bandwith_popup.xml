@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/rl_custom_layout"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="2dp"
+    android:background="@color/browser_actions_bg_grey"
+    tools:context=".appInfos">
+    <TextView
+        android:id="@+id/BatteryTitle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerHorizontal="true"
+        android:text="Batterie"
+        android:textColor="@android:color/black"
+
+        android:textSize="35sp"></TextView>
+    <TextView
+        android:id="@+id/result"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true"
+
+        android:layout_below="@+id/BatteryTitle"
+        android:textColor="@android:color/black"
+        android:textSize="17sp"></TextView>
+    <TextView
+        android:id="@+id/bandwithupTitle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Bande passante"
+        android:layout_below="@+id/result"
+        android:layout_centerInParent="true"
+        android:padding="10sp"
+        android:textSize="30sp"
+        android:textColor="@android:color/black"
+        />
+
+    <TextView
+        android:id="@+id/bandwith"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/bandwithupTitle"
+        android:text="This is a sample popup window."
+        android:layout_centerInParent="true"
+        android:textColor="@android:color/black"
+        android:padding="30sp"
+        />
+
+    <Button
+        android:id="@+id/close_band"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/bandwith"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="10dp"
+        android:fontFamily="sans-serif-condensed"
+        android:text="Fermer"
+        android:textColor="@android:color/white"
+        android:textSize="20sp" />
+</RelativeLayout>

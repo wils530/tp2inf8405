@@ -14,7 +14,7 @@ public class PrefConfig {
 
     private static final String LIST_KEY = "list_key100";
 
-    public static void writeListInPref(Context context, ArrayList<String> list) {
+    public static void writeListInPref(Context context, ArrayList<BtDevice> list) {
         Gson gson = new Gson();
         String jsonString = gson.toJson(list);
 

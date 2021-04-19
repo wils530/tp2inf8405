@@ -11,6 +11,7 @@
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
     <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION" />
+    <uses-permission android:name="android.permission.CAMERA" />
 
     <uses-permission android:name="android.permission.INTERNET"/>
     <uses-permission android:name="android.permission.BLUETOOTH" />
@@ -46,6 +47,31 @@
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+        </activity>
+        <activity
+            android:name=".Connect"
+            android:label="@string/title_activity_maps">
+
+        </activity>
+        <activity
+            android:name=".appInfos"
+            android:label="@string/title_activity_maps">
+
+        </activity>
+        <activity
+            android:name=".LightSensorActivity"
+            android:label="@string/title_activity_maps">
+
+        </activity>
+        <activity
+            android:name=".listCapteurs"
+            android:label="@string/title_activity_maps">
+
+        </activity>
+        <activity
+            android:name=".Register"
+            android:label="@string/title_activity_maps">
+
         </activity>
     </application>
 

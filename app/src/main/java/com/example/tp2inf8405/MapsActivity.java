@@ -19,13 +19,24 @@ import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.drawable.Drawable;
 import android.location.Location;
+import android.net.ConnectivityManager;
+import android.net.NetworkCapabilities;
+import android.net.NetworkInfo;
 import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.Gravity;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.LinearLayout;
 import android.widget.ListView;
+import android.widget.PopupWindow;
+import android.widget.RelativeLayout;
+import android.widget.TextView;
+import android.widget.Toast;
 
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
@@ -37,6 +48,7 @@ import com.google.android.gms.maps.model.BitmapDescriptor;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
@@ -44,11 +56,13 @@ import com.google.android.libraries.places.api.Places;
 import com.google.android.libraries.places.api.net.PlacesClient;
 
 import java.util.ArrayList;
+import java.util.Map;
+import java.util.Random;
 import java.util.Set;
 
 import static android.provider.SettingsSlicesContract.KEY_LOCATION;
 
-public class MapsActivity extends FragmentActivity implements OnMapReadyCallback {
+public class MapsActivity extends FragmentActivity implements OnMapReadyCallback, GoogleMap.OnMarkerClickListener {
 
     private GoogleMap mMap;
     private Context context = this;
@@ -63,10 +77,20 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private PlacesClient placesClient;
     private FusedLocationProviderClient fusedLocationProviderClient;
     private Activity activity = this;
-
-    ArrayList<String> arrayListDemo = new ArrayList<String>();
+    // bt device declaration
+    private BtDevice bt;
+    // array list of bt device
+    ArrayList<BtDevice> arrayListDemo = new ArrayList<BtDevice>();
     private ListView listView;
     private BluetoothAdapter mBluetoothAdapter;
+    private Context mContext;
+    private Activity mActivity;
+    private Button mCapteurs;
+
+    private LinearLayout mLinearLayout;
+    private Button mButton;
+
+    private PopupWindow mPopupWindow;
 
 
     @Override
@@ -77,6 +101,17 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         setContentView(R.layout.activity_maps);
         changeTheme = (Button) findViewById(R.id.changeTheme);
         //arrayTest();
+        // Get the application context
+        mContext = getApplicationContext();
+
+        // Get the activity
+        mActivity = MapsActivity.this;
+
+        // Get the widgets reference from XML layout
+        mLinearLayout = (LinearLayout) findViewById(R.id.rl);
+        mButton = (Button) findViewById(R.id.checkInfos);
+        mCapteurs = (Button) findViewById(R.id.capteurs);
+
 
         IntentFilter filter = new IntentFilter(BluetoothDevice.ACTION_FOUND);
         registerReceiver(mReceiver, filter);
@@ -87,14 +122,37 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
-        ArrayAdapter adapter = new ArrayAdapter<String>(this,
+        ArrayAdapter adapter = new ArrayAdapter<BtDevice>(this,
                 R.layout.list_view, arrayListDemo);
 
         listView = (ListView) findViewById(R.id.bluetooth_list);
         listView.setAdapter(adapter);
+
+
+        //event listener for bt device list
+        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView <?> parent, View view, int position, long id) {
+                //get the info of the bt device clicked and pass them to popup to showed
+                openDialog(arrayListDemo.get(position));
+            }
+        });
+        mButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                goToInfos();
+            }
+        });
+
         mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
         mBluetoothAdapter.startDiscovery();
-        arrayListDemo = PrefConfig.readListFromPref(this);
+        mCapteurs.setOnClickListener(new View.OnClickListener() {
+
+            public void onClick(View v) {
+                Intent intent = new Intent(MapsActivity.this, LightSensorActivity.class);
+                startActivity(intent);
+            }
+        });
         changeTheme.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -114,35 +172,65 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         });
 
     }
+    //popup function taking as a parameter a bt device
+    private void openDialog(BtDevice btDevice) {
+        ExampleDialog exampleDialog=new ExampleDialog(btDevice);
+        exampleDialog.show(getSupportFragmentManager(),"Dialog");
+    }
+
     @Override
     protected void onDestroy() {
         unregisterReceiver(mReceiver);
         super.onDestroy();
     }
 
+    public int check (String btmac){
+        int i,x; x=1;
+        for(i=0; i<=arrayListDemo.size()-1; i++){
+            if (arrayListDemo.get(i).mac.contentEquals(btmac))
+                x = 0;
+        } return x;
+
+    }
+
+
 
     private final BroadcastReceiver mReceiver = new BroadcastReceiver() {
+
         public void onReceive(Context context, Intent intent) {
+
             String action = intent.getAction();
 
             if (BluetoothDevice.ACTION_FOUND.equals(action)) {
                 BluetoothDevice device = intent
                         .getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
-                if (!arrayListDemo.contains(device.getName() + "\n" + device.getAddress())) {
+                    if (check (device.getAddress()) != 0 ){
                     if (device.getName() != null) {
-                        arrayListDemo.add(device.getName() + "\n" + device.getAddress());
+                        //if new device is found we inctanciate a new btdevice and give it the adequate information
+                        LatLng deviceLocation = defaultLocation;
+                        if (lastKnownLocation != null) {
+                            deviceLocation = new LatLng(lastKnownLocation.getLatitude(), lastKnownLocation.getLongitude());
+                        }
+                        bt = new BtDevice();
+                        bt.mac=device.getAddress();
+                        bt.dName=device.getName();
+                        bt.c=deviceLocation;
+                        //adding the device to the list of bt device
+                        arrayListDemo.add(bt);
 
-                        LatLng deviceLocation = new LatLng(lastKnownLocation.getLatitude(), lastKnownLocation.getLongitude());
+                        //adding a marker to the map of the new bt device found
                         mMap.addMarker(new MarkerOptions()
-                                .position(deviceLocation)
-                                .title(device.getName()).icon(bitmapDescriptorFromVector(context, R.drawable.mbl))).showInfoWindow();
+                                .position(bt.c)
+                                .title(bt.dName).icon(bitmapDescriptorFromVector(context, R.drawable.mbl)).snippet(bt.mac + "\n" + bt.c.latitude + "\n" +bt.c.longitude));
 
                     }
                     Log.i("BT", device.getName() + "\n" + device.getAddress());
-                    listView.setAdapter(new ArrayAdapter<String>(context,
+                    listView.setAdapter(new ArrayAdapter<BtDevice>(context,
                             R.layout.list_view, arrayListDemo));
+
+                    //sauvegarde de données des appareils dans un fichier
                     PrefConfig.writeListInPref(getApplicationContext(),arrayListDemo);
-                }
+                    }
             }
         }
     };
@@ -161,9 +249,16 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         updateLocationUI();
         getDeviceLocation();
 
-
+        //marker event listener, handles all the markers on map
+        mMap.setOnMarkerClickListener(this);
     }
+    //after a marker is clicked the we show info window containing the bt device info
+    public boolean onMarkerClick(final Marker marker) {
 
+        marker.showInfoWindow();
+
+        return false;
+    }
     private void getDeviceLocation() {
 
         try {
@@ -179,7 +274,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                                 LatLng currentLocation = new LatLng(lastKnownLocation.getLatitude(), lastKnownLocation.getLongitude());
                                 mMap.addMarker(new MarkerOptions()
                                         .position(currentLocation)
-                                        .title("current position").icon(bitmapDescriptorFromVector(context, R.drawable.ic_baseline_emoji_people_24))).showInfoWindow();
+                                        .title("current position").icon(bitmapDescriptorFromVector(context, R.drawable.ic_baseline_emoji_people_24)));
 
                                 mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(
                                         new LatLng(lastKnownLocation.getLatitude(),
@@ -279,6 +374,19 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         vectorDrawable.draw(canvas);
         return BitmapDescriptorFactory.fromBitmap(bitmap);
     }
+
+
+    @Override
+    public void onPointerCaptureChanged(boolean hasCapture) {
+
+
+    }
+
+    private void goToInfos(){
+        Intent intent = new Intent(this, appInfos.class);
+        startActivity(intent);
+    }
+
 
 
 

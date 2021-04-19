@@ -3,4 +3,7 @@
     <string name="title_activity_maps">Map</string>
     <string name="list_members">Denaud PIERRE PAUL\nDrucker LAGUERRE\nFarid TAOURIRT\n Manyl TELMAT\n</string>
     <string name="app_version">Ver. 0.0.1</string>
+    <string name="light_sensor">Capteur lumiere: %1$.2f lx</string>
+    <string name="no_sensor">Pas de capteur de lumiere disponible</string>
+    <string name="no_sensor_temp">Pas de capteur de température disponible</string>
 </resources>

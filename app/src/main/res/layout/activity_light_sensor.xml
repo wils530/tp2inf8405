@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/root"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/white"
+    tools:context=".LightSensorActivity">
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:context="com.example.polydraw.MainActivity"
+        android:layout_centerVertical="true"
+        android:orientation="vertical">
+    <TextView
+        android:id="@+id/lightTextViewTitle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Lumière"
+        android:layout_centerHorizontal="true"
+        android:textSize="30sp"
+        android:textColor="@color/black"/>
+
+
+    <TextView
+        android:id="@+id/lightTextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/light_sensor"
+        android:layout_below="@+id/lightTextViewTitle"
+        android:textSize="30sp"
+        android:textColor="@color/black"
+        android:layout_centerHorizontal="true"/>
+
+        <TextView
+            android:id="@+id/tempTitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="accélération"
+            android:layout_centerHorizontal="true"
+            android:layout_below="@+id/lightTextView"
+            android:textSize="30sp"
+            android:textColor="@color/black"/>
+
+    <TextView
+        android:id="@+id/temperatureTextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/light_sensor"
+        android:textColor="@color/black"
+        android:textSize="20sp"
+        android:layout_below="@+id/tempTitle"
+        android:layout_centerHorizontal="true" />
+    </RelativeLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>
